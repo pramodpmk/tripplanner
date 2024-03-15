@@ -9,6 +9,7 @@ import com.example.composeapp.data.remote.DataState
 import com.example.composeapp.data.user.UserDetails
 import com.example.composeapp.ui.presentation.detail.domain.LoadGptSettingsUseCase
 import com.example.composeapp.ui.presentation.detail.domain.LoadSearchResultUseCase
+import com.example.composeapp.ui.presentation.detail.domain.SaveTripDetailsUseCase
 import com.example.composeapp.ui.presentation.home.domain.UserDetailsUseCase
 import com.example.composeapp.ui.presentation.profile.domain.UpdateUserDetailsUseCase
 import com.example.composeapp.utils.AdmobUtils
@@ -29,6 +30,7 @@ class DetailViewModel @Inject constructor(
     val userDetailsUseCase: UserDetailsUseCase,
     val updateUserDetailsUseCase: UpdateUserDetailsUseCase,
     val chatGptSettingsUseCase: LoadGptSettingsUseCase,
+    val saveTripDetailsUseCase: SaveTripDetailsUseCase,
     val admobUtils: AdmobUtils
 ) : ViewModel() {
 
@@ -83,6 +85,7 @@ class DetailViewModel @Inject constructor(
                         val json = Gson().toJson(result.data)
                         LoggerUtils.traceLog("loadSearchResult>>>${json}")
                         _searchState.value = UiState.Success(result.data)
+                        saveTripDetails(result.data)
                     }
 
                     is DataState.Error -> {
@@ -92,6 +95,20 @@ class DetailViewModel @Inject constructor(
                         )
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Save trip details to firebase
+     */
+    private fun saveTripDetails(detailModel: DetailModel) {
+        viewModelScope.launch {
+            saveTripDetailsUseCase(
+                detailModel,
+                searchType
+            ).distinctUntilChanged().collectLatest {
+                // Do nothing
             }
         }
     }

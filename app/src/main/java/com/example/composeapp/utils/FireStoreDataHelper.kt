@@ -1,5 +1,6 @@
 package com.example.composeapp.utils
 
+import com.example.composeapp.data.detail.DetailDto
 import com.example.composeapp.data.detail.DetailModel
 import com.example.composeapp.data.home.TripItemModel
 import com.example.composeapp.data.home.trip.TripMapper
@@ -38,7 +39,7 @@ class FireStoreDataHelper @Inject constructor() {
         }
     }
 
-    suspend fun saveTripDetails(item: UserDetails): Flow<DataState<Boolean>> {
+    suspend fun saveTripDetails(item: DetailDto): Flow<DataState<Boolean>> {
         return callbackFlow {
             Firebase.firestore.collection(TABLE_TRIPS)
                 .add(item)
@@ -56,6 +57,48 @@ class FireStoreDataHelper @Inject constructor() {
                         null,
                         "Trip details saving failed"
                     )
+                }
+            awaitClose {
+                // Do nothing
+            }
+        }
+    }
+
+    suspend fun getTripDetails(id: String): Flow<DataState<DetailModel>> {
+        return callbackFlow {
+            LoggerUtils.traceLog("FireStoreDataHelper getTripDetails -> ${id}")
+            Firebase.firestore.collection(TABLE_TRIPS)
+                .whereEqualTo("authId", id)
+                .get()
+                .addOnCompleteListener {
+                    LoggerUtils.traceLog("FireStoreDataHelper onComplete -> ${it.isSuccessful}")
+                    LoggerUtils.traceLog("FireStoreDataHelper onComplete data -> ${it.exception}")
+                    if (it.result.size() > 0) {
+                        val doc = it.result.documents[0].toObject(DetailDto::class.java)
+                        val item = DetailDto(
+                            _id = id,
+                            _title = doc?.title ?: "",
+                            _location = doc?.location ?: "",
+                            _dayDesc = doc?.dayDesc ?: "",
+                            _description = doc?.description ?: "",
+                            _tips = doc?.tips ?: arrayListOf(),
+                            _days = doc?.days ?: arrayListOf(),
+                            _images = doc?.images ?: arrayListOf(),
+                            _tripType = doc?.tripType ?: ""
+                        )
+                        println("Success trip details")
+                        LoggerUtils.traceLog("Data trip details -> ${doc?.title}")
+                        LoggerUtils.traceLog("Data trip details -> ${doc?.location}")
+                        trySend(DataState.Success(DetailDto.toModel(item)))
+                    } else {
+                        trySend(DataState.Error(
+                            false,
+                            1,
+                            null,
+                            null,
+                            "Trip details retrieval failed"
+                        ))
+                    }
                 }
             awaitClose {
                 // Do nothing
