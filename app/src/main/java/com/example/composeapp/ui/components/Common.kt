@@ -259,6 +259,7 @@ fun EditText(
 @Composable
 fun CustomEditField(
     label: String,
+    textValue: String = "",
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     readOnly: Boolean = false,
@@ -279,7 +280,7 @@ fun CustomEditField(
     onDoneAction: (input: String) -> Unit
 ) {
     var text by remember {
-        mutableStateOf("")
+        mutableStateOf(textValue)
     }
     val textFocusRequester = remember {
         FocusRequester()
@@ -336,6 +337,34 @@ fun CustomButton(
     onClick: () -> Unit
 ) {
     Box {
+        Button(
+            onClick = {
+                onClick.invoke()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(4.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = ButtonColor
+            )
+        ) {
+            Text(
+                text.uppercase(),
+                color = WhiteColor
+            )
+        }
+    }
+}
+
+@Composable
+fun CustomButton(
+    text: String,
+    modifier: Modifier,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+    ) {
         Button(
             onClick = {
                 onClick.invoke()

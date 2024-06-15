@@ -39,11 +39,13 @@ class MainActivity : ComponentActivity() {
                 SetupNavGraph(navHostController = navHostController)
             }
         }
-        admobUtils.loadInterstitial(this)
+        // Hiding ads for initial release
+        //admobUtils.loadInterstitial(this)
     }
 
     override fun onDestroy() {
-        admobUtils.removeInterstitial()
+        // Hiding ads for initial release
+        //admobUtils.removeInterstitial()
         super.onDestroy()
     }
 }

@@ -37,6 +37,10 @@ class FireStoreDataHelper @Inject constructor() {
             const val DELETE = "query_delete"
             const val GET_BY_ID = "query_get_by_id"
         }
+
+        object Field {
+            const val TRIP_TYPE = "tripType"
+        }
     }
 
     suspend fun saveTripDetails(item: DetailDto): Flow<DataState<Boolean>> {
@@ -68,7 +72,7 @@ class FireStoreDataHelper @Inject constructor() {
         return callbackFlow {
             LoggerUtils.traceLog("FireStoreDataHelper getTripDetails -> ${id}")
             Firebase.firestore.collection(TABLE_TRIPS)
-                .whereEqualTo("authId", id)
+                .whereEqualTo("id", id)
                 .get()
                 .addOnCompleteListener {
                     LoggerUtils.traceLog("FireStoreDataHelper onComplete -> ${it.isSuccessful}")
@@ -106,18 +110,47 @@ class FireStoreDataHelper @Inject constructor() {
         }
     }
 
-    suspend fun getTripItems() {
-        Firebase.firestore.collection(TABLE_TRIPS)
-            .whereEqualTo("", "")
-            .get()
-            .addOnSuccessListener {
-                println("Success getTripItems")
-                it.documents.forEach { doc ->
-                    println("outside item = ${doc}")
+    suspend fun getTripItems(_tripType: Int): Flow<DataState<MutableList<TripItemModel>>> {
+        return callbackFlow {
+            val tripType = "{$_tripType}"
+            Firebase.firestore.collection(TABLE_TRIPS)
+                .limit(10)
+                .whereEqualTo(Field.TRIP_TYPE, tripType)
+                .get()
+                .addOnSuccessListener {
+                    println("Success getTripItems")
+                    val resultList = arrayListOf<TripItemModel>()
+                    it.documents.forEach { _doc ->
+                        println("outside item = ${_doc}")
+                        val doc = _doc.toObject(DetailDto::class.java)
+                        val image = if (doc?.images.isNullOrEmpty()) {
+                            ""
+                        } else {
+                            doc?.images?.get(0) ?: ""
+                        }
+                        val item = TripItemModel(
+                            tripTitle = doc?.location ?: "",
+                            description = doc?.title ?: "",
+                            imageUrl = image,
+                            numOfDays = doc?.days?.size ?: 0,
+                            tripId = doc?.id ?: "",
+                            tripCategory = doc?.tripType ?: ""
+                        )
+                        resultList.add(item)
+                    }
+                    trySend(DataState.Success(resultList))
+                }.addOnFailureListener {
+                    println("Failure getTripItems")
+                    trySend(DataState.Error(
+                        false, 1,null,
+                        "", ""
+                    ))
                 }
-            }.addOnFailureListener {
-                println("Failure getTripItems")
+
+            awaitClose {
+
             }
+        }
     }
 
     suspend fun saveUserDetails(item: UserDetails): Flow<DataState<LoginModel>> {

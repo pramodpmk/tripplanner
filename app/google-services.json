@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:118580426256:android:065ff493267af66d25fc95",
+        "android_client_info": {
+          "package_name": "com.planmegptrip.tripplannerai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJ50RpGMpIG3ZlMKrmnRfMPgMKdGzszbo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:118580426256:android:ae6b19fb17ebd13825fc95",
         "android_client_info": {
           "package_name": "com.travel.tripplanner"

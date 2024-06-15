@@ -7,6 +7,7 @@ import com.example.composeapp.utils.FireStoreDataHelper
 import com.example.composeapp.utils.FirebaseAuthHelper
 import com.example.composeapp.utils.LoggerUtils
 import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -22,7 +23,6 @@ class AutoLoginUseCase @Inject constructor(
 
     operator fun invoke(): Flow<DataState<FirebaseUser>> {
         return callbackFlow {
-            delay(1000)
             firebaseAuthHelper.authenticateCurrentUser()?.let { user ->
                 LoggerUtils.traceLog("AutoLoginUseCase uid = ${user.uid}")
                 ComposeApp.instance?.userId = user.uid
@@ -34,7 +34,6 @@ class AutoLoginUseCase @Inject constructor(
                         trySend(DataState.Success(user))
                     }
                 )
-                //trySend(DataState.Success(user))
             } ?: kotlin.run {
                 trySend(
                     DataState.Error(
@@ -45,6 +44,10 @@ class AutoLoginUseCase @Inject constructor(
                         ""
                     )
                 )
+            }
+
+            awaitClose {
+
             }
         }
     }

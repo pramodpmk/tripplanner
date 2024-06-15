@@ -9,9 +9,13 @@ import com.example.composeapp.data.remote.DataState
 import com.example.composeapp.data.user.UserDetails
 import com.example.composeapp.ui.presentation.home.domain.UserDetailsUseCase
 import com.example.composeapp.ui.presentation.profile.domain.ChangePasswordUseCase
+import com.example.composeapp.ui.presentation.profile.domain.DeleteUserUseCase
 import com.example.composeapp.ui.presentation.profile.domain.LogoutUserUseCase
+import com.example.composeapp.ui.presentation.profile.domain.ReAuthenticateUseCase
 import com.example.composeapp.ui.presentation.profile.domain.UpdateUserDetailsUseCase
 import com.example.composeapp.ui.presentation.welcome.domain.AutoLoginUseCase
+import com.example.composeapp.utils.AppConstants
+import com.example.composeapp.utils.AppUtils.isValidEmail
 import com.example.composeapp.utils.LoggerUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,9 +29,13 @@ class ProfileViewModel @Inject constructor(
     val changePasswordUseCase: ChangePasswordUseCase,
     val userDetailsUseCase: UserDetailsUseCase,
     val updateUserDetailsUseCase: UpdateUserDetailsUseCase,
-    val logoutUserUseCase: LogoutUserUseCase
+    val logoutUserUseCase: LogoutUserUseCase,
+    val deleteUserUseCase: DeleteUserUseCase,
+    val reAuthenticateUseCase: ReAuthenticateUseCase
 ) : ViewModel() {
 
+    private val _reAuthenticateState = MutableStateFlow<UiState<Boolean>>(UiState.Loading)
+    val reAuthenticateState = _reAuthenticateState.asStateFlow()
     private val _loginState = MutableStateFlow<UiState<Boolean>>(UiState.Loading)
     val loginState = _loginState.asStateFlow()
     private val _userDetailsFlow = MutableStateFlow<UiState<UserDetails>>(UiState.Idle)
@@ -70,6 +78,17 @@ class ProfileViewModel @Inject constructor(
                 _loginState.value = UiState.Error(
                     1, "Passwords are not same"
                 )
+            }
+        }
+    }
+
+    /**
+     * Reset error message
+     */
+    fun resetErrorMessage(field: String) {
+        when(field) {
+            AppConstants.EditField.PASSWORD -> {
+                _loginState.value = UiState.Idle
             }
         }
     }
@@ -154,6 +173,68 @@ class ProfileViewModel @Inject constructor(
                             state.errorCode ?: 1,
                             state.message ?: ""
                         )
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Delete the user
+     */
+    fun deleteUser() {
+        viewModelScope.launch {
+            _logoutFlow.value = UiState.Loading
+            userDetails?.let { user ->
+                deleteUserUseCase(user).collectLatest { state ->
+                    when(state) {
+                        is DataState.Success -> {
+                            _logoutFlow.value = UiState.Success(state.data)
+                        }
+                        is DataState.Error -> {
+                            _logoutFlow.value = UiState.Error(
+                                state.errorCode ?: 1,
+                                state.message ?: ""
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Re Authenticate the user
+     */
+    fun reAuthenticateUser(email: String, password: String) {
+        viewModelScope.launch {
+            _reAuthenticateState.value = UiState.Loading
+            if (email.isEmpty()) {
+                _reAuthenticateState.value = UiState.Error(
+                    1, "Email is empty"
+                )
+            } else if (!email.isValidEmail()) {
+                _reAuthenticateState.value = UiState.Error(
+                    1, "Email is not valid"
+                )
+            } else if (password.isEmpty()) {
+                _reAuthenticateState.value = UiState.Error(
+                    1, "Password is empty"
+                )
+            } else {
+                reAuthenticateUseCase(
+                    email, password
+                ).collectLatest { state ->
+                    when(state) {
+                        is DataState.Success -> {
+                            _reAuthenticateState.value = UiState.Success(state.data)
+                        }
+                        is DataState.Error -> {
+                            _reAuthenticateState.value = UiState.Error(
+                                state.errorCode ?: 1,
+                                state.message ?: ""
+                            )
+                        }
                     }
                 }
             }

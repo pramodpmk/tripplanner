@@ -5,7 +5,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,20 +13,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,14 +41,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import com.example.composeapp.data.UiState
 import com.example.composeapp.data.user.UserDetails
+import com.example.composeapp.ui.components.AuthenticateBottomSheet
 import com.example.composeapp.ui.components.DynamicText
 import com.example.composeapp.ui.components.LogoutPopup
 import com.example.composeapp.ui.components.NameBottomSheet
 import com.example.composeapp.ui.components.ProfileGrid
-import com.example.composeapp.ui.components.ProfileGridItem
+import com.example.composeapp.ui.components.WebViewPage
 import com.example.composeapp.ui.navigation.Screen
 import com.example.composeapp.ui.theme.ParentBgColor
 import com.example.composeapp.utils.AppConstants
@@ -79,7 +80,16 @@ fun ProfileScreen(
     var showBottomSheet by remember {
         mutableStateOf(false)
     }
+    var showWebDialog by remember {
+        mutableStateOf(0)
+    }
     var showLogoutPopup by remember {
+        mutableStateOf(false)
+    }
+    var showDeletePopup by remember {
+        mutableStateOf(false)
+    }
+    var reAuthenticate by remember {
         mutableStateOf(false)
     }
     var editField by remember {
@@ -99,6 +109,7 @@ fun ProfileScreen(
 
             is UiState.Error -> {
                 Toast.makeText(localContext, state.message, Toast.LENGTH_SHORT).show()
+                viewModel.resetErrorMessage(AppConstants.EditField.PASSWORD)
             }
 
             else -> {
@@ -154,7 +165,8 @@ fun ProfileScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .background(color = ParentBgColor)
     ) {
         Column(
@@ -165,7 +177,8 @@ fun ProfileScreen(
                 Image(
                     imageVector = Icons.Default.AccountCircle,
                     contentDescription = "account",
-                    modifier = Modifier.size(104.dp)
+                    modifier = Modifier
+                        .size(104.dp)
                         .padding(start = 8.dp),
                     colorFilter = ColorFilter.tint(Color.White)
                 )
@@ -236,6 +249,36 @@ fun ProfileScreen(
                         }
                     }
                 },
+                termsCallBack = {
+                    if (userDetails != null) {
+                        // Logout user
+                        showWebDialog = AppConstants.TYPE_TERMS
+                    } else {
+                        navHostController.navigate(
+                            Screen.Login.route
+                        )
+                    }
+                },
+                policyCallBack = {
+                    if (userDetails != null) {
+                        // Logout user
+                        showWebDialog = AppConstants.TYPE_POLICY
+                    } else {
+                        navHostController.navigate(
+                            Screen.Login.route
+                        )
+                    }
+                },
+                deleteCallBack = {
+                    if (userDetails != null) {
+                        // Logout user
+                        reAuthenticate = true
+                    } else {
+                        navHostController.navigate(
+                            Screen.Login.route
+                        )
+                    }
+                },
                 logoutCallBack = {
                     if (userDetails != null) {
                         // Logout user
@@ -288,6 +331,8 @@ fun ProfileScreen(
         }
         if (showLogoutPopup) {
             LogoutPopup(
+                title = "Logout",
+                description = "Do you really want to logout?",
                 yesAction = {
                     showLogoutPopup = false
                     viewModel.logoutUser()
@@ -296,6 +341,57 @@ fun ProfileScreen(
                     showLogoutPopup = false
                 }
             )
+        }
+        if (showDeletePopup) {
+            LogoutPopup(
+                title = "Delete",
+                description = "Do you really want to delete your profile?",
+                yesAction = {
+                    showDeletePopup = false
+                    viewModel.deleteUser()
+                },
+                noAction = {
+                    showDeletePopup = false
+                }
+            )
+        }
+        if (reAuthenticate) {
+            AuthenticateBottomSheet(
+                viewModel = viewModel,
+                onDismiss = {
+                    reAuthenticate = false
+                },
+                onSuccess = {
+                    showDeletePopup = true
+                    reAuthenticate = false
+                }
+            )
+        }
+        if (showWebDialog > 0) {
+            Dialog(
+                onDismissRequest = {
+                showWebDialog = 0
+            },
+                DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    WebViewPage(
+                        htmlText = if (showWebDialog == AppConstants.TYPE_TERMS) {
+                            AppConstants.TERMS
+                        } else {
+                            AppConstants.PRIVACY
+                        },
+                        title = "",
+                        callBack = {
+                            showWebDialog = 0
+                        }
+                    )
+                }
+            }
         }
     }
 }

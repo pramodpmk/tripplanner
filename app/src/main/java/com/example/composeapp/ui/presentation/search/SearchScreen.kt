@@ -98,7 +98,7 @@ fun SearchScreen(
         }
     ) {
         LazyColumn {
-            if (text == "") {
+            /*if (text == "") {
                 item {
                     Row(Modifier.padding(8.dp)) {
                         Icon(imageVector = Icons.Default.Refresh, contentDescription = "Icon refresh")
@@ -111,29 +111,37 @@ fun SearchScreen(
                         Text(text = "Recent searched item")
                     }
                 }
-            }
-            searchList.value.forEach { _item ->
-                item {
-                    Row(
-                        modifier = Modifier.padding(12.dp)
-                            .clickable {
-                                // Go to detail page
-                                navHostController.navigate(
-                                    route = Screen.Detail.route.replace(
-                                        oldValue = PARAM_SEARCH,
-                                        newValue = _item.title
-                                    ).replace(
-                                        oldValue = SEARCH_TYPE,
-                                        newValue = _item.tripType.toString()
-                                    ).replace(
-                                        oldValue = AppConstants.SourcePage.ParamType,
-                                        newValue = AppConstants.SourcePage.SRC_SEARCH
+            }*/
+            if (text != "" && text.length > 2) {
+                searchList.value.forEach { _item ->
+                    item {
+                        Row(
+                            modifier = Modifier.padding(12.dp)
+                                .clickable {
+                                    if (text != "") {
+                                        text = ""
+                                    }
+                                    // Go to detail page
+                                    navHostController.navigate(
+                                        route = Screen.Detail.route.replace(
+                                            oldValue = PARAM_SEARCH,
+                                            newValue = _item.title
+                                        ).replace(
+                                            oldValue = SEARCH_TYPE,
+                                            newValue = _item.tripType.toString()
+                                        ).replace(
+                                            oldValue = AppConstants.SourcePage.ParamType,
+                                            newValue = AppConstants.SourcePage.SRC_SEARCH
+                                        )
                                     )
-                                )
-                            }
-                    ) {
-                        Icon(imageVector = Icons.Default.Refresh, contentDescription = "Icon refresh")
-                        Text(text = _item.title)
+                                }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Icon refresh"
+                            )
+                            Text(text = _item.title)
+                        }
                     }
                 }
             }

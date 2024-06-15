@@ -31,14 +31,6 @@ class AttemptLoginUseCase @Inject constructor(
                 LoggerUtils.traceLog("AttemptLoginUseCase collectLatest")
                 when(it) {
                     is DataState.Success -> {
-                        loadChatGptSettings(
-                            success = {
-
-                            },
-                            fail = {
-
-                            }
-                        )
                         trySend(
                             it.data.user?.uid?.let { userId ->
                                 ComposeApp.instance?.userId = userId
@@ -53,6 +45,14 @@ class AttemptLoginUseCase @Inject constructor(
                                     null,
                                     message = "Login Fail"
                                 )
+                            }
+                        )
+                        loadChatGptSettings(
+                            success = {
+
+                            },
+                            fail = {
+
                             }
                         )
                     }

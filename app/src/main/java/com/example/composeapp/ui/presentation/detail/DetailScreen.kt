@@ -2,6 +2,7 @@ package com.example.composeapp.ui.presentation.detail
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -38,10 +40,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.composeapp.R
 import com.example.composeapp.data.UiState
 import com.example.composeapp.data.detail.DetailModel
 import com.example.composeapp.ui.components.DetailContent
 import com.example.composeapp.ui.components.DynamicText
+import com.example.composeapp.ui.theme.ButtonColor
 import com.example.composeapp.ui.theme.ParentBgColor
 
 
@@ -62,26 +66,15 @@ fun Material3ScaffoldLibrary(
         rememberTopAppBarState()
     )
     LaunchedEffect(key1 = userDetailState.value) {
-        when(userDetailState.value) {
-            is UiState.Success -> {
-                viewModel.prepareSearchResults()
-            }
-            else -> {
-                // Do nothing
-            }
-        }
-    }
-    LaunchedEffect(key1 = searchResult.value) {
         when(val user = userDetailState.value) {
             is UiState.Success -> {
+                viewModel.prepareSearchResults()
                 if (viewModel.checkForAdd(user.data)) {
+                    /* Hiding ads for initial release
                     viewModel.admobUtils.showInterstitial(localContext) {
 
-                    }
+                    }*/
                 }
-            }
-            is UiState.Error -> {
-                // Do nothing
             }
             else -> {
                 // Do nothing
@@ -89,7 +82,6 @@ fun Material3ScaffoldLibrary(
         }
         viewModel.updateUserDetails()
     }
-
     Box(modifier = Modifier
         .fillMaxSize()
         .background(color = ParentBgColor)) {
@@ -109,36 +101,23 @@ fun Material3ScaffoldLibrary(
                             " searchType = ${viewModel.searchType}" +
                             " tripId = ${viewModel.tripId}"
                     )
-                    when(searchResult.value) {
-                        is UiState.Idle -> {
-                            // Do nothing
+                    item {
+                        GlideImage(
+                            model = R.drawable.img_travel_detail,
+                            contentDescription = "trip image",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(300.dp)
+                        ) {
+                            it.thumbnail()
                         }
-                        is UiState.Loading -> {
-                            // Do nothing
-                        }
-                        is UiState.Success<DetailModel> -> {
-                            item {
-                                GlideImage(
-                                    model = "https://res.cloudinary.com/dddd9bezd/image/upload/v1675228784/AiAgents/chatbot-100x100_a6ur0q.jpg",
-                                    contentDescription = "trip image",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(300.dp)
-                                ) {
-                                    it.thumbnail()
-                                }
-                            }
-                            item {
-                                DetailContent(
-                                    detailModel = (searchResult.value as UiState.Success<DetailModel>).data,
-                                    navHostController = navHostController
-                                )
-                            }
-                        }
-                        is UiState.Error -> {
-
-                        }
+                    }
+                    item {
+                        DetailContent(
+                            detailModel = (searchResult.value as UiState.Success<DetailModel>).data,
+                            navHostController = navHostController
+                        )
                     }
                 }
                 ElevatedButton(
@@ -156,11 +135,43 @@ fun Material3ScaffoldLibrary(
                 ) {
                     Icon(imageVector = Icons.Default.Close, contentDescription = "clear")
                 }
+                Box(
+                    Modifier.background(ButtonColor)
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                ) {
+                    Text(
+                        "Another plan".uppercase(),
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.clickable {
+                            viewModel.rePlanTrip()
+                        }.padding(16.dp)
+                            .align(Alignment.Center)
+                    )
+                }
             }
             is UiState.Error -> {
+                ElevatedButton(
+                    onClick = {
+                        // Close the detail page
+                        navHostController.popBackStack()
+                    },
+                    modifier = Modifier
+                        .size(56.dp)
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp),
+                    shape = CircleShape,
+                    contentPadding = PaddingValues(0.dp),
+                    border = BorderStroke(width = 1.dp, color = Color.Black)
+                ) {
+                    Icon(imageVector = Icons.Default.Close, contentDescription = "clear")
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(18.dp)
                 ) {
                     DynamicText(
                         text = "Error loading trip details",

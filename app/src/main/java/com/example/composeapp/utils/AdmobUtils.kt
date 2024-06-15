@@ -15,7 +15,8 @@ import javax.inject.Singleton
 @Singleton
 class AdmobUtils @Inject constructor() {
 
-    val TEST_BANNER_AD = "ca-app-pub-3940256099942544/6300978111"
+    val TEST_BANNER_AD = "ca-app-pub-9512351877604436/1687950136"
+    val INTERST_BANNER_AD = "ca-app-pub-9512351877604436/9836663199"
 
     fun bannerAdHome(): String {
         return TEST_BANNER_AD
@@ -26,7 +27,7 @@ class AdmobUtils @Inject constructor() {
     fun loadInterstitial(context: Context) {
         InterstitialAd.load(
             context,
-            "ca-app-pub-3940256099942544/1033173712", //Change this with your own AdUnitID!
+            INTERST_BANNER_AD, //Change this with your own AdUnitID!
             AdRequest.Builder().build(),
             object : InterstitialAdLoadCallback() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
@@ -42,7 +43,6 @@ class AdmobUtils @Inject constructor() {
 
     fun showInterstitial(context: Context, onAdDismissed: () -> Unit) {
         val activity = context.findActivity()
-
         if (mInterstitialAd != null && activity != null) {
             mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
                 override fun onAdFailedToShowFullScreenContent(e: AdError) {

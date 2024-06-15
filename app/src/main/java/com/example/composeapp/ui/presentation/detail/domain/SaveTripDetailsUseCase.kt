@@ -19,6 +19,8 @@ class SaveTripDetailsUseCase @Inject constructor(
         tripType: String
     ): Flow<DataState<Boolean>> {
         return callbackFlow {
+            val id = "${detailModel.id}+${System.currentTimeMillis()}"
+            detailModel.id = id
             val detailDto = DetailDto.fromModel(detailModel, tripType)
             fireStoreDataHelper.saveTripDetails(detailDto).collectLatest { data ->
                 when(data) {

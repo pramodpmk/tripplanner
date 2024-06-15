@@ -2,6 +2,8 @@ package com.example.composeapp.utils
 
 import com.example.composeapp.data.remote.DataState
 import com.google.firebase.auth.AuthResult
+import com.google.firebase.auth.EmailAuthCredential
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
@@ -97,6 +99,46 @@ class FirebaseAuthHelper @Inject constructor() {
     }
 
     /**
+     * Re Authenticate already registered users
+     */
+    suspend fun reAuthenticateUser(
+        email: String,
+        password: String
+    ): Flow<DataState<Boolean>> {
+        return callbackFlow {
+            val user = auth?.currentUser
+            val credentials = EmailAuthProvider.getCredential(
+                email, password
+            )
+            user?.let { currentUser ->
+                currentUser.reauthenticate(credentials).addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        println("loginUser addOnSuccessListener -> $it")
+                        trySend(
+                            DataState.Success(true)
+                        )
+                    } else {
+                        println("loginUser addOnFailureListener -> $it")
+                        trySend(
+                            DataState.Error(
+                                true,
+                                null,
+                                null,
+                                null,
+                                null
+                            )
+                        )
+                    }
+                }
+            }
+
+            awaitClose {
+                // Clear listeners to avoid leak
+            }
+        }
+    }
+
+    /**
      * Send reset password email
      */
     suspend fun resetPassword(
@@ -176,6 +218,38 @@ class FirebaseAuthHelper @Inject constructor() {
             trySend(
                 DataState.Success(true)
             )
+            awaitClose {
+                // Clear listeners to avoid leak
+            }
+        }
+    }
+
+    /**
+     * Logout already registered users
+     */
+    suspend fun deleteUser(
+        authId: String
+    ): Flow<DataState<Boolean>> {
+        return callbackFlow {
+            val user = auth?.currentUser!!
+            user.delete()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        trySend(
+                            DataState.Success(true)
+                        )
+                    } else {
+                        trySend(
+                            DataState.Error(
+                                false,
+                                1,
+                                null,
+                                null,
+                                "User not deleted"
+                            )
+                        )
+                    }
+                }
             awaitClose {
                 // Clear listeners to avoid leak
             }

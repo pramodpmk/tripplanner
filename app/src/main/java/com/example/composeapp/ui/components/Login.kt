@@ -119,36 +119,6 @@ fun LoginPage(
                 DynamicText(text = "Login", style = MaterialTheme.typography.headlineLarge)
             }
             Spacer(modifier = Modifier.height(24.dp))
-            /*TextField(
-                value = email,
-                onValueChange = {
-                    email = it
-                },
-                label = { Text("Email", color = OffWhite) },
-                colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = ChildBgColor,
-                    focusedContainerColor = ChildBgColor,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                shape = RoundedCornerShape(4.dp),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = {
-                        passwordFocusRequester.requestFocus()
-                    }
-                ),
-                textStyle = TextStyle.Default.copy(
-                    color = WhiteColor
-                )
-            )*/
             CustomEditField(
                 label = "Email",
                 keyboardType = KeyboardType.Email,
@@ -161,8 +131,6 @@ fun LoginPage(
 
                 }
             )
-
-
             Spacer(modifier = Modifier.height(16.dp))
             PasswordInputField(
                 text = "Password",

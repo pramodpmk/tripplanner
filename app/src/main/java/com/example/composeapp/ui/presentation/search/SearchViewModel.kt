@@ -20,9 +20,6 @@ class SearchViewModel @Inject constructor(
     val repository: SearchRepository
 ) : ViewModel() {
 
-    val dataHelper: FireStoreDataHelper = FireStoreDataHelper()
-
-    private val spiritual = mutableListOf<TripItemModel>()
     private val _searchListFlow = MutableStateFlow<MutableList<SearchedTripType>>(arrayListOf())
     val searchListFlow = _searchListFlow.asStateFlow()
 
@@ -33,22 +30,6 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             val resultTripType = tripTypeList(text)
             _searchListFlow.value = resultTripType
-
-
-//            dataHelper.getTripItems()
-
-
-//            val searchQuery = text // TODO : Build query string from input text
-//            val resp = repository.search(searchQuery)
-//            when(resp) {
-//                is DataState.Success -> {
-//                    // Api success
-//                    println("Search success : >>> ${resp.data}")
-//                }
-//                is DataState.Error -> {
-//                    // Api failure
-//                }
-//            }
         }
     }
 

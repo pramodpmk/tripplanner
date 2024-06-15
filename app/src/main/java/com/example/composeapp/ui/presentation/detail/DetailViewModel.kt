@@ -9,6 +9,7 @@ import com.example.composeapp.data.remote.DataState
 import com.example.composeapp.data.user.UserDetails
 import com.example.composeapp.ui.presentation.detail.domain.LoadGptSettingsUseCase
 import com.example.composeapp.ui.presentation.detail.domain.LoadSearchResultUseCase
+import com.example.composeapp.ui.presentation.detail.domain.LoadTripDetailsUseCase
 import com.example.composeapp.ui.presentation.detail.domain.SaveTripDetailsUseCase
 import com.example.composeapp.ui.presentation.home.domain.UserDetailsUseCase
 import com.example.composeapp.ui.presentation.profile.domain.UpdateUserDetailsUseCase
@@ -31,6 +32,7 @@ class DetailViewModel @Inject constructor(
     val updateUserDetailsUseCase: UpdateUserDetailsUseCase,
     val chatGptSettingsUseCase: LoadGptSettingsUseCase,
     val saveTripDetailsUseCase: SaveTripDetailsUseCase,
+    val loadTripDetailsUseCase: LoadTripDetailsUseCase,
     val admobUtils: AdmobUtils
 ) : ViewModel() {
 
@@ -41,6 +43,7 @@ class DetailViewModel @Inject constructor(
     private val _updateDetailsFlow = MutableStateFlow<UiState<String>>(UiState.Idle)
     var updateDetailsFlow = _updateDetailsFlow.asStateFlow()
     private var userDetails: UserDetails? = null
+    private var chatGptSettings: ChatGptSettings? = null
     var searchKey = ""
     var searchType = ""
     var tripId = ""
@@ -60,7 +63,12 @@ class DetailViewModel @Inject constructor(
                 when (user) {
                     is DataState.Success -> {
                         LoggerUtils.traceLog("loadChatGptSettings>>> success")
-                        loadSearchResult(user.data)
+                        chatGptSettings = user.data
+                        if (tripId != "" && tripId != "{tripId}") {
+                            loadTripDetails()
+                        } else {
+                            loadSearchResult(user.data)
+                        }
                     }
 
                     is DataState.Error -> {
@@ -86,6 +94,38 @@ class DetailViewModel @Inject constructor(
                         LoggerUtils.traceLog("loadSearchResult>>>${json}")
                         _searchState.value = UiState.Success(result.data)
                         saveTripDetails(result.data)
+                    }
+
+                    is DataState.Error -> {
+                        _searchState.value = UiState.Error(
+                            errorType = result.errorCode ?: 1,
+                            message = result.message ?: ""
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Reload with a new trip plan
+     */
+    fun rePlanTrip() {
+        tripId = ""
+        sourcePage = AppConstants.SourcePage.SRC_SEARCH
+        loadUserDetails()
+    }
+
+    private fun loadTripDetails() {
+        viewModelScope.launch {
+            loadTripDetailsUseCase(
+                id = tripId
+            ).distinctUntilChanged().collectLatest { result ->
+                when (result) {
+                    is DataState.Success -> {
+                        val json = Gson().toJson(result.data)
+                        LoggerUtils.traceLog("loadTripDetails>>>${json}")
+                        _searchState.value = UiState.Success(result.data)
                     }
 
                     is DataState.Error -> {

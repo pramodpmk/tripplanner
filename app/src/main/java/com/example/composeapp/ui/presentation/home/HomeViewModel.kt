@@ -5,20 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.composeapp.data.UiState
 import com.example.composeapp.data.home.TripItemModel
 import com.example.composeapp.data.remote.DataState
-import com.example.composeapp.data.search.SearchRepository
 import com.example.composeapp.data.user.UserDetails
-import com.example.composeapp.ui.presentation.home.domain.LIST_TYPE_BIKE_TRIP
-import com.example.composeapp.ui.presentation.home.domain.LIST_TYPE_GROUP
-import com.example.composeapp.ui.presentation.home.domain.LIST_TYPE_HONEYMOON
-import com.example.composeapp.ui.presentation.home.domain.LIST_TYPE_ROAD_TRIP
-import com.example.composeapp.ui.presentation.home.domain.LIST_TYPE_SOLO
-import com.example.composeapp.ui.presentation.home.domain.LIST_TYPE_SPIRITUAL
 import com.example.composeapp.ui.presentation.home.domain.LoadHomeTripListUseCase
 import com.example.composeapp.ui.presentation.home.domain.UserDetailsUseCase
 import com.example.composeapp.utils.AdmobUtils
+import com.example.composeapp.utils.AppConstants
 import com.example.composeapp.utils.LoggerUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -48,10 +41,14 @@ class HomeViewModel @Inject constructor(
     var userDetailsFlow = _userDetailsFlow.asStateFlow()
 
     init {
-        loadSpiritualList()
+
+    }
+
+    fun initCalls() {
+        //loadSpiritualList()
+        loadHoneymoonTravelList()
         loadSoloTravelList()
         loadGroupTravelList()
-        loadHoneymoonTravelList()
         loadRoadTripList()
         loadBikeTripList()
     }
@@ -85,9 +82,16 @@ class HomeViewModel @Inject constructor(
     private fun loadSpiritualList() {
         viewModelScope.launch {
             tripListUseCase(
-                typeOfList = LIST_TYPE_SPIRITUAL
-            ).collectLatest { list ->
-                _spiritualFlow.value = list
+                typeOfList = AppConstants.TripType.SPIRITUAL
+            ).collectLatest { result ->
+                when(result) {
+                    is DataState.Success -> {
+                        _spiritualFlow.value = result.data
+                    }
+                    is DataState.Error -> {
+                        // Do nothing
+                    }
+                }
             }
         }
     }
@@ -98,9 +102,16 @@ class HomeViewModel @Inject constructor(
     private fun loadSoloTravelList() {
         viewModelScope.launch {
             tripListUseCase(
-                typeOfList = LIST_TYPE_SOLO
-            ).collectLatest { list ->
-                _soloFlow.value = list
+                typeOfList = AppConstants.TripType.SOLO
+            ).collectLatest { result ->
+                when(result) {
+                    is DataState.Success -> {
+                        _soloFlow.value = result.data
+                    }
+                    is DataState.Error -> {
+                        // Do nothing
+                    }
+                }
             }
         }
     }
@@ -111,9 +122,16 @@ class HomeViewModel @Inject constructor(
     private fun loadHoneymoonTravelList() {
         viewModelScope.launch {
             tripListUseCase(
-                typeOfList = LIST_TYPE_HONEYMOON
-            ).collectLatest { list ->
-                _honeyMoonFlow.value = list
+                typeOfList = AppConstants.TripType.HONEY_MOON
+            ).collectLatest { result ->
+                when(result) {
+                    is DataState.Success -> {
+                        _honeyMoonFlow.value = result.data
+                    }
+                    is DataState.Error -> {
+                        // Do nothing
+                    }
+                }
             }
         }
     }
@@ -124,9 +142,16 @@ class HomeViewModel @Inject constructor(
     private fun loadGroupTravelList() {
         viewModelScope.launch {
             tripListUseCase(
-                typeOfList = LIST_TYPE_GROUP
-            ).collectLatest { list ->
-                _groupTravelFlow.value = list
+                typeOfList = AppConstants.TripType.GROUP
+            ).collectLatest { result ->
+                when(result) {
+                    is DataState.Success -> {
+                        _groupTravelFlow.value = result.data
+                    }
+                    is DataState.Error -> {
+                        // Do nothing
+                    }
+                }
             }
         }
     }
@@ -137,9 +162,16 @@ class HomeViewModel @Inject constructor(
     private fun loadRoadTripList() {
         viewModelScope.launch {
             tripListUseCase(
-                typeOfList = LIST_TYPE_ROAD_TRIP
-            ).collectLatest { list ->
-                _roadTripFlow.value = list
+                typeOfList = AppConstants.TripType.ROAD_TRIP
+            ).collectLatest { result ->
+                when(result) {
+                    is DataState.Success -> {
+                        _roadTripFlow.value = result.data
+                    }
+                    is DataState.Error -> {
+                        // Do nothing
+                    }
+                }
             }
         }
     }
@@ -150,9 +182,16 @@ class HomeViewModel @Inject constructor(
     private fun loadBikeTripList() {
         viewModelScope.launch {
             tripListUseCase(
-                typeOfList = LIST_TYPE_BIKE_TRIP
-            ).collectLatest { list ->
-                _bikeTripFlow.value = list
+                typeOfList = AppConstants.TripType.BIKE_TRIP
+            ).collectLatest { result ->
+                when(result) {
+                    is DataState.Success -> {
+                        _bikeTripFlow.value = result.data
+                    }
+                    is DataState.Error -> {
+                        // Do nothing
+                    }
+                }
             }
         }
     }

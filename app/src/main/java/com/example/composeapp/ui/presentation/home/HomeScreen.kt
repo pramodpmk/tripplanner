@@ -6,10 +6,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -76,155 +78,160 @@ fun HomeScreen(
 
         LaunchedEffect(key1 = Unit, block = {
             viewModel.loadUserDetails()
+            viewModel.initCalls()
         })
-
-        Column(
-            modifier = Modifier.background(
-                color = ParentBgColor
-            )
+        Box(
+            Modifier.fillMaxSize()
+                .background(color = ParentBgColor)
         ) {
-            AnimatedVisibility(visible = searchBoxClose) {
-                Column {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier
-                            .padding(start = 16.dp, end = 16.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+            Column(
+                modifier = Modifier.background(
+                    color = ParentBgColor
+                )
+            ) {
+                AnimatedVisibility(visible = searchBoxClose) {
+                    Column {
+                        Spacer(modifier = Modifier.height(12.dp))
                         Row(
+                            modifier = Modifier
+                                .padding(start = 16.dp, end = 16.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.LocationOn,
-                                contentDescription = "Location",
-                                modifier = Modifier.size(24.dp),
-                                tint = Color.White
-                            )
-                            val details = userDetailsState.value
-                            DynamicText(
-                                text = if (details is UiState.Success) {
-                                    details.data.location
-                                } else {
-                                    "Select Location"
-                                },
-                                modifier = Modifier.padding(start = 8.dp),
-                                style = MaterialTheme.typography.titleLarge,
-                                overflow = TextOverflow.Ellipsis,
-                                color = Color.White
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.LocationOn,
+                                    contentDescription = "Location",
+                                    modifier = Modifier.size(24.dp),
+                                    tint = Color.White
+                                )
+                                val details = userDetailsState.value
+                                DynamicText(
+                                    text = if (details is UiState.Success) {
+                                        details.data.location
+                                    } else {
+                                        "Select Location"
+                                    },
+                                    modifier = Modifier.padding(start = 8.dp),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Color.White
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    navHostController.navigate(Screen.Profile.route)
+                                }) {
+                                Icon(
+                                    imageVector = Icons.Default.AccountCircle,
+                                    contentDescription = "Account",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+                BoxWithConstraints {
+                    SearchScreen(
+                        navHostController = navHostController,
+                        searchBoxCallBack = {
+                            searchBoxClose = it
+                        }
+                    )
+                }
+                LazyColumn(modifier = modifier) {
+                    if (honeyMoonList.value.size > 0) {
+                        item {
+                            HomeHighlightedRow(
+                                itemList = honeyMoonList.value,
+                                navHostController = navHostController
                             )
                         }
-                        IconButton(
-                            onClick = {
-                            navHostController.navigate(Screen.Profile.route)
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.AccountCircle,
-                                contentDescription = "Account",
-                                tint = Color.White,
-                                modifier = Modifier.size(28.dp)
+                    }
+                    item {
+                        Column {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            AdmobBanner(
+                                modifier = Modifier.fillMaxWidth(),
+                                adId = viewModel.admobUtils.TEST_BANNER_AD
                             )
                         }
                     }
-                }
-            }
-            BoxWithConstraints {
-                SearchScreen(
-                    navHostController = navHostController,
-                    searchBoxCallBack = {
-                        searchBoxClose = it
+                    if (soloTravelList.value.size > 0) {
+                        item {
+                            HomeListRow(
+                                title = "Solo Adventures",
+                                description = "Explore solo travel ideas",
+                                itemList = soloTravelList.value,
+                                navHostController = navHostController
+                            )
+                        }
                     }
-                )
-            }
-            LazyColumn(modifier = modifier) {
-                if (honeyMoonList.value.size > 0) {
+                    /*if (honeyMoonList.value.size > 0) {
+                        item {
+                            HomeListRow(
+                                title = "Honeymoon packages",
+                                description = "Explore honeymoon packages",
+                                itemList = honeyMoonList.value,
+                                navHostController = navHostController
+                            )
+                        }
+                    }*/
+                    if (groupTravelList.value.size > 0) {
+                        item {
+                            MultiLineRow(
+                                title = "Group Travel Ideas",
+                                description = "Explore group travel",
+                                itemList = groupTravelList.value,
+                                navHostController = navHostController
+                            )
+                        }
+                    }
                     item {
-                        HomeHighlightedRow(
-                            itemList = honeyMoonList.value,
-                            navHostController = navHostController
-                        )
+                        Column {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            AdmobBanner(
+                                modifier = Modifier.fillMaxWidth(),
+                                adId = viewModel.admobUtils.TEST_BANNER_AD
+                            )
+                        }
                     }
-                }
-                item {
-                    Column {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        AdmobBanner(
-                            modifier = Modifier.fillMaxWidth(),
-                            adId = viewModel.admobUtils.TEST_BANNER_AD
-                        )
+                    if (roadTripList.value.size > 0) {
+                        item {
+                            MultiLineRow(
+                                title = "Road Trips",
+                                description = "Explore road trip ideas",
+                                itemList = roadTripList.value,
+                                navHostController = navHostController
+                            )
+                        }
                     }
-                }
-                if (honeyMoonList.value.size > 0) {
+                    /*item {
+                        Column {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            AdmobBanner(
+                                modifier = Modifier.fillMaxWidth(),
+                                adId = viewModel.admobUtils.TEST_BANNER_AD
+                            )
+                        }
+                    }*/
+                    if (bikeTripList.value.size > 0) {
+                        item {
+                            HomeListRow(
+                                title = "Bike Rides",
+                                description = "Explore bike trips",
+                                itemList = bikeTripList.value,
+                                navHostController = navHostController
+                            )
+                        }
+                    }
                     item {
-                        HomeListRow(
-                            title = "Honeymoon packages",
-                            description = "Explore honeymoon packages",
-                            itemList = honeyMoonList.value,
-                            navHostController = navHostController
-                        )
+                        Spacer(modifier = Modifier.height(28.dp))
                     }
-                }
-                if (groupTravelList.value.size > 0) {
-                    item {
-                        MultiLineRow(
-                            title = "Group travel packages",
-                            description = "Explore group travel packages",
-                            itemList = groupTravelList.value,
-                            navHostController = navHostController
-                        )
-                    }
-                }
-                item {
-                    Column {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        AdmobBanner(
-                            modifier = Modifier.fillMaxWidth(),
-                            adId = viewModel.admobUtils.TEST_BANNER_AD
-                        )
-                    }
-                }
-                if (soloTravelList.value.size > 0) {
-                    item {
-                        HomeListRow(
-                            title = "Solo travel packages",
-                            description = "Explore solo travel packages",
-                            itemList = soloTravelList.value,
-                            navHostController = navHostController
-                        )
-                    }
-                }
-                if (roadTripList.value.size > 0) {
-                    item {
-                        MultiLineRow(
-                            title = "Road trips",
-                            description = "Explore road trips",
-                            itemList = roadTripList.value,
-                            navHostController = navHostController
-                        )
-                    }
-                }
-                item {
-                    Column {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        AdmobBanner(
-                            modifier = Modifier.fillMaxWidth(),
-                            adId = viewModel.admobUtils.TEST_BANNER_AD
-                        )
-                    }
-                }
-                if (bikeTripList.value.size > 0) {
-                    item {
-                        HomeListRow(
-                            title = "Bike trip",
-                            description = "Explore bike trips",
-                            itemList = bikeTripList.value,
-                            navHostController = navHostController
-                        )
-                    }
-                }
-                item {
-                    Spacer(modifier = Modifier.height(28.dp))
                 }
             }
         }
