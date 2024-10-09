@@ -6,6 +6,7 @@ import com.example.composeapp.data.home.TripItemModel
 import com.example.composeapp.data.remote.DataState
 import com.example.composeapp.data.search.SearchRepository
 import com.example.composeapp.data.search.SearchedTripType
+import com.example.composeapp.data.search.SelectionChipModel
 import com.example.composeapp.utils.AppConstants
 import com.example.composeapp.utils.AppUtils
 import com.example.composeapp.utils.FireStoreDataHelper
@@ -20,15 +21,15 @@ class SearchViewModel @Inject constructor(
     val repository: SearchRepository
 ) : ViewModel() {
 
-    private val _searchListFlow = MutableStateFlow<MutableList<SearchedTripType>>(arrayListOf())
+    private val _searchListFlow = MutableStateFlow<MutableList<SelectionChipModel>>(arrayListOf())
     val searchListFlow = _searchListFlow.asStateFlow()
 
     /**
      * Load Spiritual travel packages list
      */
-    fun searchAction(text: String) {
+    fun provideTripTypeList() {
         viewModelScope.launch {
-            val resultTripType = tripTypeList(text)
+            val resultTripType = tripTypeList()
             _searchListFlow.value = resultTripType
         }
     }
@@ -36,48 +37,30 @@ class SearchViewModel @Inject constructor(
     /**
      * Return the list of search type in result
      */
-    private fun tripTypeList(text: String) = mutableListOf(
-        SearchedTripType(
-            title = AppUtils.tripTypeDescription(
-                AppConstants.TripType.SOLO,
-                text
-            ),
-            tripType = AppConstants.TripType.SOLO
+    private fun tripTypeList() = mutableListOf(
+        SelectionChipModel(
+            title = AppConstants.TripDescription.SOLO,
+            id = AppConstants.TripType.SOLO.toString()
         ),
-        SearchedTripType(
-            title = AppUtils.tripTypeDescription(
-                AppConstants.TripType.HONEY_MOON,
-                text
-            ),
-            tripType = AppConstants.TripType.HONEY_MOON
+        SelectionChipModel(
+            title = AppConstants.TripDescription.HONEY_MOON,
+            id = AppConstants.TripType.HONEY_MOON.toString()
         ),
-        SearchedTripType(
-            title = AppUtils.tripTypeDescription(
-                AppConstants.TripType.GROUP,
-                text
-            ),
-            tripType = AppConstants.TripType.GROUP
+        SelectionChipModel(
+            title = AppConstants.TripDescription.GROUP,
+            id = AppConstants.TripType.GROUP.toString()
         ),
-        SearchedTripType(
-            title = AppUtils.tripTypeDescription(
-                AppConstants.TripType.SPIRITUAL,
-                text
-            ),
-            tripType = AppConstants.TripType.SPIRITUAL
+        SelectionChipModel(
+            title = AppConstants.TripDescription.SPIRITUAL,
+            id = AppConstants.TripType.SPIRITUAL.toString()
         ),
-        SearchedTripType(
-            title = AppUtils.tripTypeDescription(
-                AppConstants.TripType.ROAD_TRIP,
-                text
-            ),
-            tripType = AppConstants.TripType.ROAD_TRIP
+        SelectionChipModel(
+            title = AppConstants.TripDescription.ROAD_TRIP,
+            id = AppConstants.TripType.ROAD_TRIP.toString()
         ),
-        SearchedTripType(
-            title = AppUtils.tripTypeDescription(
-                AppConstants.TripType.BIKE_TRIP,
-                text
-            ),
-            tripType = AppConstants.TripType.BIKE_TRIP
+        SelectionChipModel(
+            title = AppConstants.TripDescription.BIKE_TRIP,
+            id = AppConstants.TripType.BIKE_TRIP.toString()
         )
     )
 }

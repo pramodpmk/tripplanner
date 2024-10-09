@@ -1,6 +1,7 @@
 package com.example.composeapp.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -9,6 +10,7 @@ import androidx.navigation.navArgument
 import com.example.composeapp.ui.components.NameBottomSheet
 import com.example.composeapp.ui.presentation.detail.DetailRoute
 import com.example.composeapp.ui.presentation.home.HomeRoute
+import com.example.composeapp.ui.presentation.home.HomeViewModel
 import com.example.composeapp.ui.presentation.login.LoginRoute
 import com.example.composeapp.ui.presentation.profile.ProfileRoute
 import com.example.composeapp.ui.presentation.register.RegisterRoute
@@ -89,6 +91,11 @@ fun SetupNavGraph(
             route = Screen.Profile.route
         ) {
             ProfileRoute(navHostController = navHostController)
+        }
+        composable(
+            route = Screen.Search.route
+        ) {
+            SearchRoute(navHostController = navHostController)
         }
 
     }

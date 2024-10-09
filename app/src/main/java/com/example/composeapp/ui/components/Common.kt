@@ -359,6 +359,33 @@ fun CustomButton(
 @Composable
 fun CustomButton(
     text: String,
+    style: TextStyle,
+    onClick: () -> Unit,
+) {
+    Box {
+        Button(
+            onClick = {
+                onClick.invoke()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(4.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = ButtonColor
+            )
+        ) {
+            Text(
+                text.uppercase(),
+                color = WhiteColor,
+                style = style
+            )
+        }
+    }
+}
+
+@Composable
+fun CustomButton(
+    text: String,
     modifier: Modifier,
     onClick: () -> Unit
 ) {

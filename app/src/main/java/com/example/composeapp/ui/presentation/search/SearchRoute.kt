@@ -10,18 +10,14 @@ import com.example.composeapp.ui.theme.ParentBgColor
 
 @Composable
 fun SearchRoute(
-    navHostController: NavHostController,
-    searchCallBack: (searchExpanded: Boolean) -> Unit
+    navHostController: NavHostController
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = ParentBgColor
     ) {
         SearchScreen(
-            navHostController = navHostController,
-            searchBoxCallBack = {
-                searchCallBack.invoke(it)
-            }
+            navHostController = navHostController
         )
     }
 }

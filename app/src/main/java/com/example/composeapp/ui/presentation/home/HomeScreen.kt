@@ -81,7 +81,8 @@ fun HomeScreen(
             viewModel.initCalls()
         })
         Box(
-            Modifier.fillMaxSize()
+            Modifier
+                .fillMaxSize()
                 .background(color = ParentBgColor)
         ) {
             Column(
@@ -136,12 +137,15 @@ fun HomeScreen(
                     }
                 }
                 BoxWithConstraints {
-                    SearchScreen(
+                    /*SearchScreen(
                         navHostController = navHostController,
                         searchBoxCallBack = {
                             searchBoxClose = it
                         }
-                    )
+                    )*/
+                    SearchBox(placeHolder = "Search...") {
+                        navHostController.navigate(Screen.Search.route)
+                    }
                 }
                 LazyColumn(modifier = modifier) {
                     if (honeyMoonList.value.size > 0) {
