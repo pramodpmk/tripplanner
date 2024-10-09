@@ -1,6 +1,7 @@
 package com.example.composeapp.ui.presentation.search
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,11 +39,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.composeapp.data.UiState
 import com.example.composeapp.data.search.SelectionChipModel
 import com.example.composeapp.ui.components.CustomButton
 import com.example.composeapp.ui.components.FieldPicker
@@ -54,6 +58,8 @@ import com.example.composeapp.ui.theme.ComposeAppTheme
 import com.example.composeapp.ui.theme.ParentBgColor
 import com.example.composeapp.utils.AppConstants
 import com.example.composeapp.utils.AppUtils
+import com.example.composeapp.utils.LoggerUtils
+import kotlinx.coroutines.flow.collectLatest
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,6 +71,10 @@ fun SearchScreen(
     val viewModel = hiltViewModel<SearchViewModel>()
 
     val tripTypeList = viewModel.searchListFlow.collectAsState()
+    val tripDaysList = viewModel.numOfDaysFlow.collectAsState()
+    val searchQuery = viewModel.searchQuery.collectAsState(
+        UiState.Idle
+    )
 
     var text by remember {
         mutableStateOf("")
@@ -72,13 +82,76 @@ fun SearchScreen(
     var tripType by remember {
         mutableStateOf("")
     }
+    var selectedDays by remember {
+        mutableStateOf("")
+    }
     var active by remember {
         mutableStateOf(true)
     }
+    val localContext = LocalContext.current
 
     LaunchedEffect(key1 = Unit) {
         viewModel.provideTripTypeList()
+        viewModel.searchQuery.collectLatest { it ->
+            when(val state = it) {
+                is UiState.Success -> {
+                    navHostController.navigate(
+                        route = Screen.Detail.route
+                            .replace(
+                                oldValue = PARAM_SEARCH,
+                                newValue = state.data
+                            )
+                            .replace(
+                                oldValue = SEARCH_TYPE,
+                                newValue = tripType
+                            )
+                            .replace(
+                                oldValue = AppConstants.SourcePage.ParamType,
+                                newValue = AppConstants.SourcePage.SRC_SEARCH
+                            )
+                    )
+                }
+                is UiState.Error -> {
+                    // Show error message
+                    LoggerUtils.traceLog(state.message)
+                    Toast.makeText(localContext, state.message, Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    // DO nothing
+                }
+            }
+        }
     }
+    /*LaunchedEffect(key1 = searchQuery.value) {
+        LoggerUtils.traceLog("Inside launched effect searchQuery.value")
+        when(val state = searchQuery.value) {
+            is UiState.Success -> {
+                navHostController.navigate(
+                    route = Screen.Detail.route
+                        .replace(
+                            oldValue = PARAM_SEARCH,
+                            newValue = state.data
+                        )
+                        .replace(
+                            oldValue = SEARCH_TYPE,
+                            newValue = tripType
+                        )
+                        .replace(
+                            oldValue = AppConstants.SourcePage.ParamType,
+                            newValue = AppConstants.SourcePage.SRC_SEARCH
+                        )
+                )
+            }
+            is UiState.Error -> {
+                // Show error message
+                LoggerUtils.traceLog(state.message)
+                Toast.makeText(localContext, state.message, Toast.LENGTH_SHORT).show()
+            }
+            else -> {
+                // DO nothing
+            }
+        }
+    }*/
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -110,24 +183,25 @@ fun SearchScreen(
                         SelectionChipGroup(
                             itemList = tripTypeList.value,
                             onChipSelection = {
-                                AppConstants.TripType.BIKE_TRIP
+                                tripType = it.id
                             })
                     }
                 }
             }
-            item {
-                Box(modifier = Modifier.padding(
-                    start = 8.dp,
-                    end = 8.dp,
-                    top = 8.dp
-                )) {
-                    FieldPicker(itemList = listOf(
-                        SelectionChipModel("1 Day"),
-                        SelectionChipModel("2 Day 3 Night"),
-                        SelectionChipModel("3 Day 4 Night"),
-                        SelectionChipModel("5 Day 6 Night"),
-                        SelectionChipModel("10 Day 11 Night"),
-                    ), onItemClick = {})
+            if (tripDaysList.value.isNotEmpty()) {
+                item {
+                    Box(modifier = Modifier.padding(
+                        start = 8.dp,
+                        end = 8.dp,
+                        top = 8.dp
+                    )) {
+                        FieldPicker(
+                            itemList = tripDaysList.value,
+                            onItemClick = {
+                                selectedDays = it.title
+                            }
+                        )
+                    }
                 }
             }
             item {
@@ -140,21 +214,13 @@ fun SearchScreen(
                         text = "Generate Plan",
                         style = MaterialTheme.typography.titleMedium
                     ) {
+                        LoggerUtils.traceLog("Button Clicked")
+                        LoggerUtils.traceLog("days:$selectedDays place:$text type:$tripType")
                         // Go to detail page
-                        navHostController.navigate(
-                            route = Screen.Detail.route
-                                .replace(
-                                    oldValue = PARAM_SEARCH,
-                                    newValue = text
-                                )
-                                .replace(
-                                    oldValue = SEARCH_TYPE,
-                                    newValue = tripType
-                                )
-                                .replace(
-                                    oldValue = AppConstants.SourcePage.ParamType,
-                                    newValue = AppConstants.SourcePage.SRC_SEARCH
-                                )
+                        viewModel.planTrip(
+                            numDays = selectedDays,
+                            place = text,
+                            tripType = tripType
                         )
                     }
                 }
