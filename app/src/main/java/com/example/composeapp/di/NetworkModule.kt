@@ -20,7 +20,6 @@ import javax.inject.Singleton
 object NetworkModule {
 
     const val STAGE_BASE_URL = "https://api.openai.com/"
-    const val CHATGPT_API_KEY = "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"
     const val API_VERSION = "v1/"
 
     @Provides
